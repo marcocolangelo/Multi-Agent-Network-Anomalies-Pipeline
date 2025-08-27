@@ -1,7 +1,6 @@
 # Multi-Agent-Network-Anomalies-Pipeline
 # Demo LLM Pipeline
 
-Hi there! 👋
 This project is a modern, agent-based pipeline demo for network anomaly detection powered by LLMs (LangChain + Ollama-ready). Agents are decoupled, extensible, and communicate via a minimal async event-bus. Notify, not Manager, generates your final report with real LLM reasoning.
 
 ---
