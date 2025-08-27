@@ -1,0 +1,7 @@
+langchain>=0.2.0
+langchain-community>=0.2.0
+pydantic>=2.4
+tqdm
+pandas
+scikit-learn
+python-dotenv
