@@ -2,6 +2,8 @@ import asyncio
 from app.utils.tracing import log, new_trace_id
 from app.core.messages import Msg
 from app.core.bus import EventBus
+from app.utils.tracing import log_gui
+
 
 class ManagerSequencer:
     def __init__(self, bus: EventBus):
@@ -17,10 +19,11 @@ class ManagerSequencer:
                 fut.set_result(True)
         self.bus.subscribe("ACK_DONE", done)
         await fut
-        log("Manager ▶ cycle end, restart if needed")
+        from app.utils.tracing import log_gui
+        log_gui("Manager", "cycle end, restart if needed")
 
     async def manager_plan_listener(self, msg: Msg):
-        log("Manager ▶ planning enrichment retrieval")
+        log_gui("Manager", "planning enrichment retrieval")
         anom = msg.payload["anomaly"]
         tid = msg.trace_id
         self.waiting[tid] = {"anomaly": anom, "ctx": None, "hist": None}
@@ -28,6 +31,7 @@ class ManagerSequencer:
         # parallel trigger
         await self.bus.publish(Msg(trace_id=tid, role="KRetriever", payload={"anomaly": anom}))
         await self.bus.publish(Msg(trace_id=tid, role="HRetriever", payload={"anomaly": anom}))
+        log_gui("Manager", f"received anomaly {anom.get('id', '')}, triggering retrievers")
 
     async def enr_ok_listener(self, msg: Msg):
         store = self.waiting[msg.trace_id]
@@ -36,8 +40,13 @@ class ManagerSequencer:
         else:
             store["ctx"] = msg.payload["ctx"]
         if store["ctx"] and store["hist"]:
-            log(f"Manager ▶ all context ready")
+            from app.utils.tracing import log_gui
+            log_gui("Manager", f"both enrichments ready for {msg.trace_id}, assembling report")
             await self.bus.publish(Msg(trace_id=msg.trace_id,
                                        role="NOTIFY_ASSEMBLE",
                                        payload=store))
+            
+    async def fatal_error(self, msg: Msg):
+        log_gui("Manager", f"fatal error occurred: too many retries in {msg.role}")
+        await self.bus.publish(Msg(trace_id=msg.trace_id, role="ACK_DONE", payload={}))
 

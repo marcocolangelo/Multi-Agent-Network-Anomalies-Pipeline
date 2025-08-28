@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import List, Dict
 from pandas import DataFrame
 from app.utils.tracing import log
+from app.utils.tracing import log_gui
 
 @dataclass
 class Anomaly:
@@ -15,10 +16,10 @@ class AnomalyDetectorMock:
     _cid = itertools.count(1)
     def detect(self, df : DataFrame):
         if random.random() < 0.1:
-            log("AnomalyModel ▶ no anomaly detected")
+            log_gui("AnomalyModel", "no anomaly detected")
             return []
         idx = next(self._cid)
-        log("AnomalyModel ▶ anomaly detected")
+        log_gui("AnomalyModel", "anomaly detected")
         return [Anomaly(
             id=f"A-{idx:04d}",
             severity=random.choice(["low", "medium", "high"]),

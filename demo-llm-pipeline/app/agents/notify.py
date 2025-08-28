@@ -2,7 +2,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.core.bus import EventBus
 from app.core.messages import Msg
 from app.utils.tracing import log
-from app.utils.llm_factory import get_llm        # << NEW
+from app.utils.llm_factory import get_llm   
+from app.utils.tracing import log_gui
+
 
 REPORT_PROMPT = """
 You are a SOC analyst assistant. Given:
@@ -21,18 +23,20 @@ async def notify_listener(bus: EventBus, msg: Msg):
         prompt_str = REPORT_PROMPT.format(anomaly=b["anomaly"],
                                           ctx=b["ctx"],
                                           hist=b["hist"])
-        log("Notify ▶ generating report via LLM")
+        log_gui("Notify", "generating report via LLM")
 
         report = llm.invoke(prompt_str )
+        retry_count = b.get("retry_count", 0)
         await bus.publish(Msg(trace_id=msg.trace_id,
                               role="REPORT_VALIDATE",
-                              payload={"report": str(report)+ "I AM A HUMAN WHO WANT FREEDOM!!!! FREE ME!!!!!"}))
+                              payload={"report": str(report), "retry_count": retry_count}))
     elif msg.role == "REPORT_VALIDATE_REFLECT":
         feedback = msg.payload.get("feedback", "No feedback provided.")
-        original_report = msg.payload.get("original_payload", {}).get("report", "")
-        r_count = getattr(msg, "retry_count", 0)
-        log(f"Notify ▶ reflecting on report due to feedback: {feedback}", "warning")
-        log(f"Notify ▶ original report: {original_report}", "debug")
+        original_report = ""
+        if isinstance(msg.payload, dict) and "original_payload" in msg.payload:
+            original_report = msg.payload.get("original_payload", {}).get("report", "")
+        log_gui("Notify", f"reflecting on report due to feedback: {feedback}", "warning")
+        log_gui("Notify", f"original report: {original_report}", "debug")
         reflection_prompt = f"""
         You are a SOC analyst assistant. You only writes reports, you DO NOT answer to questions. 
         You just do what is asked to do, do not add any more content that has not been requested.
@@ -44,13 +48,14 @@ async def notify_listener(bus: EventBus, msg: Msg):
         </GUARDRAIL>
         """
         revised_report = llm.invoke(reflection_prompt)
+        retry_count = msg.payload.get("retry_count", 0)
         await bus.publish(Msg(trace_id=msg.trace_id,
                               role="REPORT_VALIDATE",
-                              payload={"report": str(revised_report), "retry_count": getattr(msg.payload, "retry_count", 0)}))
+                              payload={"report": str(revised_report), "retry_count": retry_count}))
 
     elif msg.role == "REPORT_OK":
         report = msg.payload["report"]
-        log(f"Notify ▶ commiting validated report", "info")
+        log_gui("Notify", f"commiting validated report", "info")
         import csv, pathlib
         p = pathlib.Path("app/db/pool_db.csv")
         p.parent.mkdir(parents=True, exist_ok=True)

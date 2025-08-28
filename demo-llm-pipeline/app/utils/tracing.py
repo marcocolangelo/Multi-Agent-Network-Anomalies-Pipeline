@@ -1,3 +1,12 @@
+
+def log_gui(agent: str, msg: str, level: str = "info"):
+    log(f"{agent} ▶ {msg}", level)
+    try:
+        from app.global_gui import gui
+        if gui:
+            gui.gui_log(agent, msg)
+    except Exception:
+        pass
 import logging, uuid, contextvars
 
 trace_var = contextvars.ContextVar("trace_id", default=None)

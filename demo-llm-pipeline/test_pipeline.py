@@ -2,6 +2,8 @@ import asyncio, textwrap, pathlib, functools
 from app.core.bus import EventBus
 from app.utils.tracing import init_logger
 from app.agents import proc, guardrail, anomaly_model, retriever_domain, retriever_history, notify, manager
+from app.GUI import PipelineGUI
+
 
 RAW_LOGS_PATH = pathlib.Path("demo-llm-pipeline/raw_logs_demo.txt")
 with RAW_LOGS_PATH.open() as f:
@@ -36,6 +38,9 @@ async def test_pipeline():
     bus.subscribe("REPORT_OK",          functools.partial(notify.notify_listener, bus))
     bus.subscribe("REPORT_VALIDATE_REFLECT", functools.partial(notify.notify_listener, bus))  # <-- reflection
 
+    # Fatal error
+    bus.subscribe("FATAL",           seq.fatal_error)  # <-- fatal error handling
+
     # Intercetta la fine della pipeline (ACK_DONE)
     async def ack_done(msg):
         results['done'] = True
@@ -53,9 +58,9 @@ async def test_pipeline():
     # Verifica che il file CSV sia stato scritto
     csv_path = pathlib.Path("app/db/pool_db.csv")
     assert csv_path.exists(), "Il file pool_db.csv non è stato creato!"
-    with csv_path.open() as f:
-        content = f.read()
-        print("Contenuto pool_db.csv:\n", content)
+    # with csv_path.open() as f:
+    #     content = f.read()
+    #     print("Contenuto pool_db.csv:\n", content)
     print("Test completato: la pipeline e il bus funzionano correttamente.")
 
 if __name__ == "__main__":

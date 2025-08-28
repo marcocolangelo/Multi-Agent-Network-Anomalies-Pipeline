@@ -3,6 +3,8 @@ from app.utils.tracing import log
 from app.core.messages import Msg
 from app.core.bus import EventBus
 from app.utils.llm_factory import get_llm
+from app.utils.tracing import log_gui
+
 
 POOLDB_PATH = "app/db/pool_db.csv"
 llm = get_llm()
@@ -49,12 +51,12 @@ async def hretrieve_listener(bus: EventBus, msg: Msg):
         context_hist = "\n".join(history_rows)
         prompt = RAG_PROMPT.format(anomaly=anomaly, history_examples=context_hist)
         rag_result = llm.invoke(prompt)
-        log(f"HRetriever ▶ history result: {rag_result}")
+        log_gui("HRetriever", f"history result: {rag_result}")
+        retry_count = msg.payload.get("retry_count", 0)
         await bus.publish(Msg(
             trace_id=msg.trace_id,
             role="HRETRIEVE_VALIDATE",
-            payload={"anomaly": anomaly, "hist": rag_result},
-            retry_count=getattr(msg, "retry_count", 0)
+            payload={"anomaly": anomaly, "hist": rag_result, "retry_count": retry_count}
         ))
 
     elif msg.role == "HRETRIEVE_VALIDATE_REFLECT":
@@ -62,23 +64,14 @@ async def hretrieve_listener(bus: EventBus, msg: Msg):
         reflection = msg.payload
         anomaly = reflection["original_payload"]["anomaly"]
         feedback = reflection["feedback"]
-        # Reload history as above
         history_rows = reflection["original_payload"]["hist"]
-        # try:
-        #     with open(POOLDB_PATH, "r") as f:
-        #         reader = csv.reader(f)
-        #         for row in reader:
-        #             if row:
-        #                 history_rows.append(row[-1])
-        # except FileNotFoundError:
-        #     history_rows = ["No prior incidents recorded yet."]
-        # context_hist = "\n".join(history_rows[-5:])
         prompt = REFLECTION_PROMPT.format(anomaly=anomaly, history_examples=history_rows, feedback=feedback)
         rag_result = llm.invoke(prompt)
-        log(f"HRetriever ▶ Reflection result: {rag_result}")
+        log_gui("HRetriever", f"Reflection result: {rag_result}")
+        retry_count = msg.payload.get("retry_count", 0)
         await bus.publish(Msg(
             trace_id=msg.trace_id,
             role="HRETRIEVE_VALIDATE",
-            payload={"anomaly": anomaly, "hist": rag_result, "retry_count": getattr(msg.payload, "retry_count", 0)},
+            payload={"anomaly": anomaly, "hist": rag_result, "retry_count": retry_count},
         ))
-        log(f"HRetriever ▶ Reflection retry with feedback: {feedback}", "warning")
+        log_gui("HRetriever", f"Reflection retry with feedback: {feedback}", "warning")
