@@ -20,10 +20,11 @@ class NetworkLogPreprocessor:
 async def proc_listener(bus: EventBus, msg: Msg):
     raw = msg.payload["raw_logs"]
     log("Proc ▶ start")
+
     pre = NetworkLogPreprocessor()
     csv_part = "\n".join(l for l in raw.splitlines() if l and l[0].isdigit())
     df = pre.preprocess(csv_part)
-    log(f"Proc ▶ produced {len(df)} rows")
+    log(f"Proc ▶ produced the following DataFrame:\n{df.head().to_string()}")
     await bus.publish(Msg(trace_id=msg.trace_id,
-                          role="INGEST_VALIDATE",
+                          role="INGEST_OK",
                           payload={"df": df}))

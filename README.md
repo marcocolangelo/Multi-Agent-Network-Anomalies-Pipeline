@@ -21,6 +21,7 @@ This project is a modern, agent-based pipeline demo for network anomaly detectio
 
 ### 1. Environment (choose one)
 
+```
 **venv:**
 python -m venv .venv
 source .venv/bin/activate # or .\.venv\Scripts\activate on Windows
@@ -28,20 +29,27 @@ source .venv/bin/activate # or .\.venv\Scripts\activate on Windows
 **conda:**
 conda create -n demo-llm-pipeline python=3.10 -y
 conda activate demo-llm-pipeline
+```
 
 ### 2. Install dependencies
 
+```
 pip install -r requirements.txt
+```
 
 ### 3. (Optional) Use a real LLM via Ollama
 
+```
 ollama pull llama3
 ollama serve
+```
 
 *(You can run the demo without Ollama; it uses Fake LLM fallback and will "just work" anyway.)*
 
 ### 4. Fire up the pipeline
+```
 python main.py
+```
 
 ---
 
@@ -68,6 +76,7 @@ python main.py
 
 ## 🏃 Example Output
 
+```
 12:01:01 T-01fa435b Proc ▶ start
 12:01:01 T-01fa435b Proc ▶ produced 3 rows
 12:01:01 T-01fa435b GuardRail ▶ INGEST_VALIDATE True
@@ -78,7 +87,7 @@ python main.py
 12:01:03 T-01fa435b GuardRail ▶ REPORT_VALIDATE True
 12:01:03 T-01fa435b Notify ▶ commiting validated report
 12:01:03 T-01fa435b Manager ▶ cycle end, restart if needed
-
+```
 ---
 
 ## 🔧 Troubleshooting Tips

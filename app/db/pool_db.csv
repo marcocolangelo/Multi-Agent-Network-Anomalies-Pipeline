@@ -1,1 +1,64 @@
-T-259921a9,Sample incident report.
+T-32ab13bf,"**Incident Report: Service Outage Anomaly**
+
+**Severity Assessment:** Medium-High
+
+The provided anomaly report indicates a service outage with an unusually high volume of traffic from a single host to a specific destination IP. While the flow duration is within the normal range, the high volume of packets and bytes suggests a potential security incident.
+
+**Root Cause Hypothesis:**
+
+Based on the available data, our root cause hypothesis is that the anomaly is related to an internal network issue or a legitimate service outage. However, given the high volume of traffic and the fact that it's coming from a single host, we cannot rule out the possibility of malicious activity.
+
+**Recommended Mitigations:**
+
+1. **Investigate Source IP:** Verify the origin of the source IP address '10.1.1.108' to determine if it's an internal or external threat.
+2. **Monitor Destination Port:** Increase monitoring for the destination port '33845' to identify any suspicious activity.
+3. **Review System Logs:** Analyze system logs to see if there are any error messages or security alerts related to this flow.
+4. **Notify IT and Management:** Inform the relevant teams about the outage and provide an estimated time of recovery.
+
+**Additional Recommendations:**
+
+1. Conduct regular security awareness training for employees to prevent insider threats.
+2. Review network traffic data regularly to stay informed about potential attack vectors.
+3. Increase alert thresholds for high volumes of packets and bytes to detect similar anomalies more quickly.
+
+**Timeline:**
+
+* 18:40:02 - Anomaly detected
+* 18:45:00 - Investigate source IP address '10.1.1.108'
+* 19:00:00 - Review system logs for security alerts
+* 20:00:00 - Notify IT and management about the outage
+
+**Conclusion:**
+
+This incident highlights the importance of monitoring network traffic for unusual patterns and anomalies. By investigating the source IP address, monitoring the destination port, and reviewing system logs, we can determine the root cause of the anomaly and take necessary mitigations to prevent future occurrences.
+
+**Recommendation for Future Improvement:**
+
+Implement a more robust security awareness program for employees to prevent insider threats and conduct regular network traffic analysis to stay informed about potential attack vectors."
+T-a7ea080a,"**Incident Report: Unusual Spike of UDP 53 Traffic (DNS Amplification Hint)**
+
+**Context:** This incident occurred on [Date] during a scheduled maintenance window for our cloud-hosted DNS server, specifically affecting our internal network infrastructure. The DNS server is responsible for resolving domain names to IP addresses.
+
+**Summary:**
+During scheduled DNS server maintenance, an unusual spike in UDP 53 traffic was detected, suggesting potential DNS amplification attack or internal network issue on our cloud-hosted DNS server.
+
+**Severity Assessment:**
+Medium-High
+
+**Root Cause Hypothesis:**
+Possible DNS amplification attack or internal network issue, exacerbated by the scheduled maintenance window for our cloud-hosted DNS server.
+
+**Recommended Mitigations:**
+
+• Monitor and block suspicious traffic from source IP (10.1.1.107) to destination IP (1.1.1.1).
+• Implement rate limiting on DNS queries.
+• Verify and validate DNS responses.
+• Consider implementing traffic shaping and policing policies.
+
+**Timeline:**
+Investigate source IP address, monitor destination port, review system logs, and notify IT and management within [Timeframe].
+
+**Recommendations for Future Improvement:**
+
+• Implement additional security measures to detect and respond to DNS amplification attacks.
+• Conduct regular security audits to identify vulnerabilities and implement patches."

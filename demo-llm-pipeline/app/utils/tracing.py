@@ -7,6 +7,7 @@ def init_logger():
         level=logging.INFO,
         format="%(asctime)s %(levelname)-7s %(message)s",
         datefmt="%H:%M:%S",
+        force=True
     )
 
 def new_trace_id() -> str:

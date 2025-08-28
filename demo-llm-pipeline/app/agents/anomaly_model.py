@@ -15,6 +15,7 @@ async def anomaly_listener(bus: EventBus, msg: Msg):
         return
 
     for anom in anomalies:
+        log(f"AnomalyModel ▶ detected anomaly: {anom.__dict__}")
         await bus.publish(Msg(trace_id=msg.trace_id,
                               role="MANAGER_PLAN",
                               payload={"anomaly": anom.__dict__}))

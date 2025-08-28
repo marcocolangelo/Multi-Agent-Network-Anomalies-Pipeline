@@ -20,8 +20,9 @@ class ManagerSequencer:
         log("Manager ▶ cycle end, restart if needed")
 
     async def manager_plan_listener(self, msg: Msg):
+        log("Manager ▶ planning enrichment retrieval")
         anom = msg.payload["anomaly"]
-        tid   = msg.trace_id
+        tid = msg.trace_id
         self.waiting[tid] = {"anomaly": anom, "ctx": None, "hist": None}
 
         # parallel trigger
@@ -30,11 +31,13 @@ class ManagerSequencer:
 
     async def enr_ok_listener(self, msg: Msg):
         store = self.waiting[msg.trace_id]
-        if "rule" in msg.payload:
-            store["ctx"] = msg.payload
+        if "hist" in msg.payload:
+            store["hist"] = msg.payload["hist"]
         else:
-            store["hist"] = msg.payload
+            store["ctx"] = msg.payload["ctx"]
         if store["ctx"] and store["hist"]:
+            log(f"Manager ▶ all context ready")
             await self.bus.publish(Msg(trace_id=msg.trace_id,
                                        role="NOTIFY_ASSEMBLE",
                                        payload=store))
+
