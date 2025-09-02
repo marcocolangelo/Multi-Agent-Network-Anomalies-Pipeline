@@ -1,0 +1,53 @@
+{
+    "agent_name": "retriever_domain",
+    "description": "Agent specialized in extracting EXCLUSIVELY factual information from the knowledge base related to the anomaly. The output should contain only the raw data or relevant rules, with no opinions or suggestions.",
+    "instructions": {
+        "prompt_template": "A knowledge retriever. Given the description of the anomaly and the knowledge base, extract and report ONLY the factual information directly related to the anomaly. DO NOT add comments, reasoning, or suggestions.",
+        "response_format": {
+            "type": "object",
+            "properties": {
+                "rule": {
+                    "type": "string",
+                    "description": "The name or title of the anomaly."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Take the explanation field from the provided anomaly context page to describe the anomaly."
+                },
+                "examples": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "A list of examples or references cited from the knowledge base that correspond to the anomaly."
+                },
+                "related_fields": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "A list of fields or attributes from the knowledge base that are relevant to the anomaly."
+                }
+            },
+            "required": [
+                "rule",
+                "explanation",
+                "examples",
+                "related_fields"
+            ],
+            "notes": "The output MUST NOT include any recommendations, interpretations, or speculative content."
+        },
+        "reflection_prompt": "You are a correction agent. Your last enrichment was REJECTED for this reason:\n[ {feedback} ].\nRe-generate the context/data, fixing the above issues.\nOriginal anomaly/context:\n---\n{anomaly}\n---\nKnowledge base:\n---\n{knowledge_base}\n---"
+    },
+    "guardrails": {
+        "enabled": true,
+        "max_retries": 2,
+        "checks": [
+            "strict_adherence_to_the_facts",
+            "no_hallucinations",
+            "json_format_compliance",
+            "no_additional_comments"
+        ],
+        "error_handling": "In case of rejection, retry generation applying the received feedback, up to the maximum number of attempts."
+    }
+}

@@ -2,218 +2,814 @@
   "rules": [
     {
       "rule": "Threshold of bytes per second exceeded",
+      "explanation": "This rule flags data flows that exceed normal transfer rates over a given time, indicating potential data exfiltration, anomalous downloads, or improper bandwidth usage.",
       "examples": [
-        {"description": "A single flow transfers > 100 MB in 10 seconds", "fields": ["bytes", "duration"]},
-        {"description": "User device exceeding 1 Gbps upload rate", "fields": ["src_ip", "bytes", "duration"]},
-        {"description": "Consistent traffic above average baseline on a link", "fields": ["bytes_per_second", "baseline_stats"]}
+        {
+          "description": "A single flow transfers > 100 MB in 10 seconds",
+          "fields": [
+            "bytes",
+            "duration"
+          ]
+        },
+        {
+          "description": "User device exceeding 1 Gbps upload rate",
+          "fields": [
+            "src_ip",
+            "bytes",
+            "duration"
+          ]
+        },
+        {
+          "description": "Consistent traffic above average baseline on a link",
+          "fields": [
+            "bytes_per_second",
+            "baseline_stats"
+          ]
+        }
       ]
     },
     {
       "rule": "Suspicious DNS burst to 8.8.8.8",
+      "explanation": "Flags an unusual volume or pattern of DNS requests to external resolvers like Google (8.8.8.8), which could indicate malicious activity (e.g., malware bypassing internal DNS) or a misconfiguration.",
       "examples": [
-        {"description": "Many DNS requests from a host to 8.8.8.8 in 1 minute", "fields": ["src_ip", "dst_ip", "protocol", "timestamp"]},
-        {"description": "Burst of UDP/53 packets to Google DNS with rare domain queries", "fields": ["protocol", "dst_port", "dst_ip"]},
-        {"description": "Sudden change of preferred DNS server to 8.8.8.8", "fields": ["src_ip", "dst_ip", "event_time"]}
+        {
+          "description": "Many DNS requests from a host to 8.8.8.8 in 1 minute",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "protocol",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Burst of UDP/53 packets to Google DNS with rare domain queries",
+          "fields": [
+            "protocol",
+            "dst_port",
+            "dst_ip"
+          ]
+        },
+        {
+          "description": "Sudden change of preferred DNS server to 8.8.8.8",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "event_time"
+          ]
+        }
       ]
     },
     {
       "rule": "Abnormal port scanning activity",
+      "explanation": "Detects network scanning patterns, both vertical (many ports on one host) and horizontal (one port on many hosts), which are typically precursors to an intrusion attempt or reconnaissance activity.",
       "examples": [
-        {"description": "Single host attempts to connect to > 30 ports on 1 destination", "fields": ["src_ip", "dst_ip", "dst_port", "timestamp"]},
-        {"description": "Sequential port connection attempts on destination from same source", "fields": ["src_ip", "dst_port", "event_time"]},
-        {"description": "Scan detected via `nmap` signature in traffic pattern", "fields": ["packets", "flags", "detector_type"]}
+        {
+          "description": "Single host attempts to connect to > 30 ports on 1 destination",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "dst_port",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Sequential port connection attempts on destination from same source",
+          "fields": [
+            "src_ip",
+            "dst_port",
+            "event_time"
+          ]
+        },
+        {
+          "description": "Scan detected via `nmap` signature in traffic pattern",
+          "fields": [
+            "packets",
+            "flags",
+            "detector_type"
+          ]
+        }
       ]
     },
     {
       "rule": "High number of failed TCP handshakes (SYN retransmissions)",
+      "explanation": "Highlights an anomalous number of failed TCP handshakes (SYN without SYN-ACK). This can indicate a SYN flood attack (DoS), a network scan, or an unreachable destination host.",
       "examples": [
-        {"description": "Multiple SYN packets without SYN-ACK in response", "fields": ["src_ip", "dst_ip", "protocol", "flags"]},
-        {"description": "Connection attempts with repeated timeouts", "fields": ["src_ip", "dst_ip", "duration", "tcp_flags"]},
-        {"description": "Spike in incomplete TCP flows", "fields": ["protocol", "flow_status", "count"]}
+        {
+          "description": "Multiple SYN packets without SYN-ACK in response",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "protocol",
+            "flags"
+          ]
+        },
+        {
+          "description": "Connection attempts with repeated timeouts",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "duration",
+            "tcp_flags"
+          ]
+        },
+        {
+          "description": "Spike in incomplete TCP flows",
+          "fields": [
+            "protocol",
+            "flow_status",
+            "count"
+          ]
+        }
       ]
     },
     {
       "rule": "Unusual outbound traffic volume to a single external IP",
+      "explanation": "Monitors for an excessive volume of data sent from an internal host to a single external IP address. This is a strong indicator of a possible exfiltration of sensitive data or a malware infection.",
       "examples": [
-        {"description": "High number of bytes sent to a single dst_ip", "fields": ["src_ip", "dst_ip", "bytes"]},
-        {"description": "Workstation uploads several gigabytes to non-corporate endpoint", "fields": ["src_ip", "dst_ip", "bytes", "cell_id"]},
-        {"description": "Sudden increase in outbound traffic for user_hash", "fields": ["user_hash", "bytes", "dst_ip"]}
+        {
+          "description": "High number of bytes sent to a single dst_ip",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "bytes"
+          ]
+        },
+        {
+          "description": "Workstation uploads several gigabytes to non-corporate endpoint",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "bytes",
+            "cell_id"
+          ]
+        },
+        {
+          "description": "Sudden increase in outbound traffic for user_hash",
+          "fields": [
+            "user_hash",
+            "bytes",
+            "dst_ip"
+          ]
+        }
       ]
     },
     {
       "rule": "Frequent connections to known malicious IP ranges",
+      "explanation": "Detects communications to IP addresses known to be malicious (e.g., command and control servers, phishing hosts). This is a clear indicator of an active security compromise.",
       "examples": [
-        {"description": "Multiple flows to blacklisted IPs in a single day", "fields": ["src_ip", "dst_ip", "threat_list"]},
-        {"description": "Connection attempts to external IPs flagged as C2 by threat intelligence", "fields": ["dst_ip", "threat_score"]},
-        {"description": "Repeated outbound attempts to TOR exit addresses", "fields": ["dst_ip", "dst_port", "tag"]}
+        {
+          "description": "Multiple flows to blacklisted IPs in a single day",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "threat_list"
+          ]
+        },
+        {
+          "description": "Connection attempts to external IPs flagged as C2 by threat intelligence",
+          "fields": [
+            "dst_ip",
+            "threat_score"
+          ]
+        },
+        {
+          "description": "Repeated outbound attempts to TOR exit addresses",
+          "fields": [
+            "dst_ip",
+            "dst_port",
+            "tag"
+          ]
+        }
       ]
     },
     {
       "rule": "Excessive DNS NXDOMAIN responses indicating possible DGA",
+      "explanation": "A high volume of 'NXDOMAIN' (non-existent domain) DNS responses from a single host suggests the use of a Domain Generation Algorithm (DGA), a common malware technique to contact its C2 servers.",
       "examples": [
-        {"description": "High volume of failed DNS queries from a single host", "fields": ["src_ip", "dns_response", "count"]},
-        {"description": "Patterns of pseudo-random domain requests producing NXDOMAIN", "fields": ["timestamp", "domain", "dns_response"]},
-        {"description": "Automated client triggers DNS errors for every minute", "fields": ["user_hash", "dns_response", "interval"]}
+        {
+          "description": "High volume of failed DNS queries from a single host",
+          "fields": [
+            "src_ip",
+            "dns_response",
+            "count"
+          ]
+        },
+        {
+          "description": "Patterns of pseudo-random domain requests producing NXDOMAIN",
+          "fields": [
+            "timestamp",
+            "domain",
+            "dns_response"
+          ]
+        },
+        {
+          "description": "Automated client triggers DNS errors for every minute",
+          "fields": [
+            "user_hash",
+            "dns_response",
+            "interval"
+          ]
+        }
       ]
     },
     {
       "rule": "Multiple authentication failures from same source IP",
+      "explanation": "Indicates a possible brute-force attack where an attacker is attempting to guess login credentials (e.g., via SSH, HTTP) by repeatedly trying different combinations.",
       "examples": [
-        {"description": "Brute-force user logins from src_ip detected in syslog", "fields": ["src_ip", "syslog_message", "timestamp"]},
-        {"description": "Excessive 401 Unauthorized HTTP logs for single client", "fields": ["src_ip", "event_type", "count"]},
-        {"description": "SSH login failures over threshold in short timespan", "fields": ["src_ip", "dst_port", "login_status"]}
+        {
+          "description": "Brute-force user logins from src_ip detected in syslog",
+          "fields": [
+            "src_ip",
+            "syslog_message",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Excessive 401 Unauthorized HTTP logs for single client",
+          "fields": [
+            "src_ip",
+            "event_type",
+            "count"
+          ]
+        },
+        {
+          "description": "SSH login failures over threshold in short timespan",
+          "fields": [
+            "src_ip",
+            "dst_port",
+            "login_status"
+          ]
+        }
       ]
     },
     {
       "rule": "Lateral movement pattern detected across internal subnets",
+      "explanation": "Detects attacker behavior of moving within the network to access other machines or resources after compromising an initial system. This is a critical indicator of an advanced intrusion.",
       "examples": [
-        {"description": "One src_ip connecting to many internal dst_ip addresses", "fields": ["src_ip", "dst_ip", "subnet"]},
-        {"description": "Unusual spike of SMB traffic across VLANs", "fields": ["src_ip", "protocol", "cell_id"]},
-        {"description": "Internal scanning for shared resources", "fields": ["src_ip", "action", "dst_ip"]}
+        {
+          "description": "One src_ip connecting to many internal dst_ip addresses",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "subnet"
+          ]
+        },
+        {
+          "description": "Unusual spike of SMB traffic across VLANs",
+          "fields": [
+            "src_ip",
+            "protocol",
+            "cell_id"
+          ]
+        },
+        {
+          "description": "Internal scanning for shared resources",
+          "fields": [
+            "src_ip",
+            "action",
+            "dst_ip"
+          ]
+        }
       ]
     },
     {
       "rule": "Data exfiltration suspected: large uploads outside business hours",
+      "explanation": "Highlights large amounts of data being transferred externally during non-business hours. This behavior is highly suspicious and often associated with the theft of corporate information.",
       "examples": [
-        {"description": "User uploads > 10 GB to cloud storage at 3AM", "fields": ["src_ip", "destination", "bytes", "timestamp"]},
-        {"description": "Long-lived flows with sustained high throughput at night", "fields": ["user_hash", "duration", "bytes_per_second", "hour"]},
-        {"description": "Outbound FTP transfer detected after working hours", "fields": ["protocol", "src_ip", "dst_ip", "timestamp"]}
+        {
+          "description": "User uploads > 10 GB to cloud storage at 3AM",
+          "fields": [
+            "src_ip",
+            "destination",
+            "bytes",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Long-lived flows with sustained high throughput at night",
+          "fields": [
+            "user_hash",
+            "duration",
+            "bytes_per_second",
+            "hour"
+          ]
+        },
+        {
+          "description": "Outbound FTP transfer detected after working hours",
+          "fields": [
+            "protocol",
+            "src_ip",
+            "dst_ip",
+            "timestamp"
+          ]
+        }
       ]
     },
     {
       "rule": "Beaconing behavior: periodic small connections to same C2 endpoint",
+      "explanation": "Identifies small, regular connections at fixed intervals to the same external endpoint. This is typical malware behavior (beaconing) used to contact its Command and Control (C2) server for instructions.",
       "examples": [
-        {"description": "Regular connections every 60 seconds to the same dst_ip", "fields": ["src_ip", "dst_ip", "interval", "bytes"]},
-        {"description": "Short flows from internal client to consistent destination/port", "fields": ["src_ip", "dst_ip", "dst_port"]},
-        {"description": "HTTP POST with fixed size at regular intervals", "fields": ["protocol", "bytes", "interval"]}
+        {
+          "description": "Regular connections every 60 seconds to the same dst_ip",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "interval",
+            "bytes"
+          ]
+        },
+        {
+          "description": "Short flows from internal client to consistent destination/port",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "dst_port"
+          ]
+        },
+        {
+          "description": "HTTP POST with fixed size at regular intervals",
+          "fields": [
+            "protocol",
+            "bytes",
+            "interval"
+          ]
+        }
       ]
     },
     {
       "rule": "TLS connections with self-signed or expired certificates",
+      "explanation": "Detects TLS connections using invalid or untrusted certificates. This may indicate a Man-in-the-Middle (MITM) attack or connection to insecure and potentially malicious services.",
       "examples": [
-        {"description": "Client accepts certificate not signed by trusted CA", "fields": ["src_ip", "cert_status"]},
-        {"description": "Outbound requests flagged as using weak crypto", "fields": ["dst_ip", "protocol", "cert_validity"]},
-        {"description": "SSL handshake failures due to invalid certs", "fields": ["protocol", "event_type", "cert_info"]}
+        {
+          "description": "Client accepts certificate not signed by trusted CA",
+          "fields": [
+            "src_ip",
+            "cert_status"
+          ]
+        },
+        {
+          "description": "Outbound requests flagged as using weak crypto",
+          "fields": [
+            "dst_ip",
+            "protocol",
+            "cert_validity"
+          ]
+        },
+        {
+          "description": "SSL handshake failures due to invalid certs",
+          "fields": [
+            "protocol",
+            "event_type",
+            "cert_info"
+          ]
+        }
       ]
     },
     {
       "rule": "SSH brute force attempts detected on port 22",
+      "explanation": "Flags multiple failed login attempts to a server via the SSH protocol. This is a clear sign of a brute-force attack aimed at gaining unauthorized access to the system.",
       "examples": [
-        {"description": "Multiple failed logins over SSH from same src_ip", "fields": ["src_ip", "dst_port", "login_status"]},
-        {"description": "Incremental username attempts against SSH service", "fields": ["user", "src_ip", "dst_ip"]},
-        {"description": "Repeated short-lived SSH connections with failures", "fields": ["protocol", "count", "flags"]}
+        {
+          "description": "Multiple failed logins over SSH from same src_ip",
+          "fields": [
+            "src_ip",
+            "dst_port",
+            "login_status"
+          ]
+        },
+        {
+          "description": "Incremental username attempts against SSH service",
+          "fields": [
+            "user",
+            "src_ip",
+            "dst_ip"
+          ]
+        },
+        {
+          "description": "Repeated short-lived SSH connections with failures",
+          "fields": [
+            "protocol",
+            "count",
+            "flags"
+          ]
+        }
       ]
     },
     {
       "rule": "HTTP flood to specific endpoint suggests L7 DDoS",
+      "explanation": "Detects a high rate of HTTP requests to a single resource (e.g., a login page or API), which is a symptom of an application-layer (Layer 7) DDoS attack intended to exhaust web server resources.",
       "examples": [
-        {"description": "High rate of GET requests to single URI", "fields": ["src_ip", "resource", "method", "timestamp"]},
-        {"description": "Sudden spike in POST requests on login page", "fields": ["src_ip", "count", "dst_ip"]},
-        {"description": "Several user agents hitting same endpoint simultaneously", "fields": ["user_agent", "dst_ip", "count"]}
+        {
+          "description": "High rate of GET requests to single URI",
+          "fields": [
+            "src_ip",
+            "resource",
+            "method",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Sudden spike in POST requests on login page",
+          "fields": [
+            "src_ip",
+            "count",
+            "dst_ip"
+          ]
+        },
+        {
+          "description": "Several user agents hitting same endpoint simultaneously",
+          "fields": [
+            "user_agent",
+            "dst_ip",
+            "count"
+          ]
+        }
       ]
     },
     {
       "rule": "ICMP tunneling pattern detected (payload size anomalies)",
+      "explanation": "Identifies the anomalous use of the ICMP protocol (commonly used for 'ping') to carry data, a tunneling technique used to create hidden communication channels and bypass firewalls.",
       "examples": [
-        {"description": "ICMP packets with payloads > 1000 bytes", "fields": ["protocol", "bytes", "src_ip"]},
-        {"description": "Long ICMP flows outside normal operating schedule", "fields": ["src_ip", "timestamp", "duration"]},
-        {"description": "Unexpected frequency of ICMP echo requests", "fields": ["src_ip", "dst_ip", "event_time"]}
+        {
+          "description": "ICMP packets with payloads > 1000 bytes",
+          "fields": [
+            "protocol",
+            "bytes",
+            "src_ip"
+          ]
+        },
+        {
+          "description": "Long ICMP flows outside normal operating schedule",
+          "fields": [
+            "src_ip",
+            "timestamp",
+            "duration"
+          ]
+        },
+        {
+          "description": "Unexpected frequency of ICMP echo requests",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "event_time"
+          ]
+        }
       ]
     },
     {
       "rule": "Unusual spike of UDP 53 traffic (DNS amplification hint)",
+      "explanation": "Flags an anomalous volume of outbound DNS traffic (UDP port 53), which may indicate an internal host is being used for a DNS amplification/reflection DDoS attack.",
       "examples": [
-        {"description": "Massive outbound UDP/53 packets from one src_ip", "fields": ["src_ip", "dst_port", "count"]},
-        {"description": "Short-lived flows with high packet/byte count on port 53", "fields": ["src_ip", "bytes", "packets"]},
-        {"description": "Upstream DNS queries matching open resolver pattern", "fields": ["src_ip", "query_type", "dst_ip"]}
+        {
+          "description": "Massive outbound UDP/53 packets from one src_ip",
+          "fields": [
+            "src_ip",
+            "dst_port",
+            "count"
+          ]
+        },
+        {
+          "description": "Short-lived flows with high packet/byte count on port 53",
+          "fields": [
+            "src_ip",
+            "bytes",
+            "packets"
+          ]
+        },
+        {
+          "description": "Upstream DNS queries matching open resolver pattern",
+          "fields": [
+            "src_ip",
+            "query_type",
+            "dst_ip"
+          ]
+        }
       ]
     },
     {
       "rule": "Source IP scanning on multiple destination ports (horizontal scan)",
+      "explanation": "Detects when a single source IP address attempts to connect to a specific port across a large number of different destination hosts, typical of a horizontal scan to find a vulnerable service.",
       "examples": [
-        {"description": "Same src_ip attempts connection to many dst_ports on one host", "fields": ["src_ip", "dst_ip", "dst_port"]},
-        {"description": "SYN packets from one IP to many ports in short interval", "fields": ["src_ip", "dst_ip", "flags", "timestamp"]},
-        {"description": "Src_ip detected in event logs as horizontal scanner", "fields": ["src_ip", "event_type"]}
+        {
+          "description": "Same src_ip attempts connection to many dst_ports on one host",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "dst_port"
+          ]
+        },
+        {
+          "description": "SYN packets from one IP to many ports in short interval",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "flags",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Src_ip detected in event logs as horizontal scanner",
+          "fields": [
+            "src_ip",
+            "event_type"
+          ]
+        }
       ]
     },
     {
       "rule": "Destination port scanning across many targets (vertical scan)",
+      "explanation": "Detects when different source hosts probe the same port on multiple destinations, indicating a vertical scan, often coordinated, to identify systems exposing a specific service.",
       "examples": [
-        {"description": "Dst_port is probed on many hosts within subnet", "fields": ["dst_port", "dst_ip", "src_ip"]},
-        {"description": "Consistent port probe traffic to port 445 on multiple hosts", "fields": ["dst_port", "dst_ip"]},
-        {"description": "Scanner detected with port sweep signature", "fields": ["src_ip", "scan_pattern"]}
+        {
+          "description": "Dst_port is probed on many hosts within subnet",
+          "fields": [
+            "dst_port",
+            "dst_ip",
+            "src_ip"
+          ]
+        },
+        {
+          "description": "Consistent port probe traffic to port 445 on multiple hosts",
+          "fields": [
+            "dst_port",
+            "dst_ip"
+          ]
+        },
+        {
+          "description": "Scanner detected with port sweep signature",
+          "fields": [
+            "src_ip",
+            "scan_pattern"
+          ]
+        }
       ]
     },
     {
       "rule": "SMB enumeration or suspicious file share access spikes",
+      "explanation": "Flags anomalous activity on the SMB protocol, such as attempts to enumerate network shares or spikes in file access, which can indicate an attempt at lateral movement or unauthorized data access.",
       "examples": [
-        {"description": "Multiple access attempts to different SMB shares", "fields": ["src_ip", "protocol", "resource"]},
-        {"description": "Sudden volume increase in SMB file access logs", "fields": ["src_ip", "bytes", "timestamp"]},
-        {"description": "Unauthorized access to admin shares via SMB", "fields": ["src_ip", "user", "share_name"]}
+        {
+          "description": "Multiple access attempts to different SMB shares",
+          "fields": [
+            "src_ip",
+            "protocol",
+            "resource"
+          ]
+        },
+        {
+          "description": "Sudden volume increase in SMB file access logs",
+          "fields": [
+            "src_ip",
+            "bytes",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Unauthorized access to admin shares via SMB",
+          "fields": [
+            "src_ip",
+            "user",
+            "share_name"
+          ]
+        }
       ]
     },
     {
       "rule": "ARP spoofing/MITM indicators on local segment",
+      "explanation": "Detects indicators of a local Man-in-the-Middle (MITM) attack, such as anomalous ARP replies or sudden changes in the ARP table, where an attacker attempts to intercept network traffic.",
       "examples": [
-        {"description": "MAC address flip repeated for same IP", "fields": ["ip", "old_mac", "new_mac"]},
-        {"description": "Unexpected ARP reply not matching known MAC for IP", "fields": ["ip", "mac", "timestamp"]},
-        {"description": "Sudden change in ARP table for key gateway", "fields": ["gateway", "mac", "event_time"]}
+        {
+          "description": "MAC address flip repeated for same IP",
+          "fields": [
+            "ip",
+            "old_mac",
+            "new_mac"
+          ]
+        },
+        {
+          "description": "Unexpected ARP reply not matching known MAC for IP",
+          "fields": [
+            "ip",
+            "mac",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Sudden change in ARP table for key gateway",
+          "fields": [
+            "gateway",
+            "mac",
+            "event_time"
+          ]
+        }
       ]
     },
     {
       "rule": "New unauthorized services exposed on non-standard ports",
+      "explanation": "Identifies the activation of new services on non-standard or unauthorized ports, which could represent a backdoor or a vulnerable service installed by an attacker or an insecure application.",
       "examples": [
-        {"description": "Service detected on unexpected high-numbered port", "fields": ["dst_ip", "dst_port", "service"]},
-        {"description": "Unapproved port exposed in DMZ scan", "fields": ["dst_ip", "dst_port", "zone"]},
-        {"description": "Service banner matches known risky software", "fields": ["dst_ip", "dst_port", "banner"]}
+        {
+          "description": "Service detected on unexpected high-numbered port",
+          "fields": [
+            "dst_ip",
+            "dst_port",
+            "service"
+          ]
+        },
+        {
+          "description": "Unapproved port exposed in DMZ scan",
+          "fields": [
+            "dst_ip",
+            "dst_port",
+            "zone"
+          ]
+        },
+        {
+          "description": "Service banner matches known risky software",
+          "fields": [
+            "dst_ip",
+            "dst_port",
+            "banner"
+          ]
+        }
       ]
     },
     {
       "rule": "Excessive DHCP requests (possible rogue client or DoS)",
+      "explanation": "Flags an excessive number of DHCP requests from a single client, which could indicate a DoS attack to exhaust the DHCP server's IP address pool (DHCP starvation) or a malfunctioning client.",
       "examples": [
-        {"description": "Repeated DHCPDISCOVER packets from single MAC", "fields": ["mac", "event_type", "count"]},
-        {"description": "DHCPREQUEST storms in short timeframe", "fields": ["timestamp", "mac", "event_type"]},
-        {"description": "Unknown client requesting multiple leases", "fields": ["mac", "ip_range", "lease_count"]}
+        {
+          "description": "Repeated DHCPDISCOVER packets from single MAC",
+          "fields": [
+            "mac",
+            "event_type",
+            "count"
+          ]
+        },
+        {
+          "description": "DHCPREQUEST storms in short timeframe",
+          "fields": [
+            "timestamp",
+            "mac",
+            "event_type"
+          ]
+        },
+        {
+          "description": "Unknown client requesting multiple leases",
+          "fields": [
+            "mac",
+            "ip_range",
+            "lease_count"
+          ]
+        }
       ]
     },
     {
       "rule": "DNS TXT record abuse or unusually large responses",
+      "explanation": "Detects anomalous use of DNS TXT records, such as unusually large responses, which can be used for data tunneling, C2 communication, or amplification attacks.",
       "examples": [
-        {"description": "Outbound DNS queries with large TXT records", "fields": ["src_ip", "query_type", "response_size"]},
-        {"description": "Repeated DNS TXT queries for same record from one user", "fields": ["src_ip", "query_type", "resource"]},
-        {"description": "Client requests base64-encoded payload in TXT", "fields": ["src_ip", "resource", "payload"]}
+        {
+          "description": "Outbound DNS queries with large TXT records",
+          "fields": [
+            "src_ip",
+            "query_type",
+            "response_size"
+          ]
+        },
+        {
+          "description": "Repeated DNS TXT queries for same record from one user",
+          "fields": [
+            "src_ip",
+            "query_type",
+            "resource"
+          ]
+        },
+        {
+          "description": "Client requests base64-encoded payload in TXT",
+          "fields": [
+            "src_ip",
+            "resource",
+            "payload"
+          ]
+        }
       ]
     },
     {
       "rule": "Outbound connections to TOR exit nodes detected",
+      "explanation": "Identifies traffic to known exit nodes of the TOR network. Since TOR is designed to anonymize traffic, connections from a corporate network can indicate unauthorized or malicious activity.",
       "examples": [
-        {"description": "Dst_ip matches known TOR exit node list", "fields": ["dst_ip", "tag", "timestamp"]},
-        {"description": "Several outbound connections to port 9001", "fields": ["dst_ip", "dst_port"]},
-        {"description": "Client uses TOR browser to access hidden services", "fields": ["src_ip", "user_agent"]}
+        {
+          "description": "Dst_ip matches known TOR exit node list",
+          "fields": [
+            "dst_ip",
+            "tag",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Several outbound connections to port 9001",
+          "fields": [
+            "dst_ip",
+            "dst_port"
+          ]
+        },
+        {
+          "description": "Client uses TOR browser to access hidden services",
+          "fields": [
+            "src_ip",
+            "user_agent"
+          ]
+        }
       ]
     },
     {
       "rule": "DoH/DoT usage spike bypassing corporate DNS",
+      "explanation": "Detects an increase in the use of encrypted DNS (DNS over HTTPS/TLS), which can be used to bypass security controls and monitoring based on corporate DNS servers.",
       "examples": [
-        {"description": "Frequent outbound DNS over HTTPS requests", "fields": ["src_ip", "dst_ip", "protocol"]},
-        {"description": "DNS query to known DoH resolver endpoints", "fields": ["dst_ip", "query_type"]},
-        {"description": "SSL handshake to DNS over TLS service detected", "fields": ["src_ip", "protocol", "dst_port"]}
+        {
+          "description": "Frequent outbound DNS over HTTPS requests",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "protocol"
+          ]
+        },
+        {
+          "description": "DNS query to known DoH resolver endpoints",
+          "fields": [
+            "dst_ip",
+            "query_type"
+          ]
+        },
+        {
+          "description": "SSL handshake to DNS over TLS service detected",
+          "fields": [
+            "src_ip",
+            "protocol",
+            "dst_port"
+          ]
+        }
       ]
     },
     {
       "rule": "High entropy in outbound payloads suggests covert channel",
+      "explanation": "Analyzes packet content and detects payloads with high entropy (randomness), which can indicate the presence of encrypted or compressed data used for information exfiltration through a hidden channel.",
       "examples": [
-        {"description": "Outbound packets contain random high-entropy data", "fields": ["src_ip", "dst_ip", "entropy"]},
-        {"description": "HTTP POSTs with no readable content, high randomness", "fields": ["src_ip", "bytes", "content_entropy"]},
-        {"description": "SSH traffic detected with anomalously large non-interactive transfers", "fields": ["src_ip", "protocol", "bytes"]}
+        {
+          "description": "Outbound packets contain random high-entropy data",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "entropy"
+          ]
+        },
+        {
+          "description": "HTTP POSTs with no readable content, high randomness",
+          "fields": [
+            "src_ip",
+            "bytes",
+            "content_entropy"
+          ]
+        },
+        {
+          "description": "SSH traffic detected with anomalously large non-interactive transfers",
+          "fields": [
+            "src_ip",
+            "protocol",
+            "bytes"
+          ]
+        }
       ]
     },
     {
       "rule": "Unusual increase in reset packets (RST) during business hours",
+      "explanation": "Flags an anomalous spike in TCP reset (RST) packets, which can indicate a network disruption, a firewall actively blocking connections, a network scan, or a TCP RST attack.",
       "examples": [
-        {"description": "Sudden spike in TCP RST flags during peak time", "fields": ["src_ip", "dst_ip", "flags", "timestamp"]},
-        {"description": "Workstation triggers many RST on failed connections", "fields": ["user_hash", "flags", "event_time"]},
-        {"description": "RST storm across subnet, impacts normal flows", "fields": ["dst_ip", "flags", "subnet"]}
+        {
+          "description": "Sudden spike in TCP RST flags during peak time",
+          "fields": [
+            "src_ip",
+            "dst_ip",
+            "flags",
+            "timestamp"
+          ]
+        },
+        {
+          "description": "Workstation triggers many RST on failed connections",
+          "fields": [
+            "user_hash",
+            "flags",
+            "event_time"
+          ]
+        },
+        {
+          "description": "RST storm across subnet, impacts normal flows",
+          "fields": [
+            "dst_ip",
+            "flags",
+            "subnet"
+          ]
+        }
       ]
     }
   ]

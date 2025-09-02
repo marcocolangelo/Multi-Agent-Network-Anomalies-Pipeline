@@ -1,4 +1,6 @@
 import csv
+import json
+import pathlib
 from app.utils.tracing import log
 from app.core.messages import Msg
 from app.core.bus import EventBus
@@ -7,32 +9,41 @@ from app.utils.tracing import log_gui
 
 
 POOLDB_PATH = "app/db/pool_db.csv"
+RULE_PATH = str(pathlib.Path(__file__).parent.parent / "db" / "agents_cards" / "hretriever.json")
+
+with open(RULE_PATH, "r", encoding="utf-8") as f:
+    prompt = json.load(f)
+    
+agent_instructions = prompt["instructions"]
+prompt_template = agent_instructions["prompt_template"]
+response_format = agent_instructions["response_format"]
+response_properties = response_format["properties"]
+required_fields = response_format["required"]
+
+notes = agent_instructions.get("notes", "No additional notes provided.")
 llm = get_llm()
 
 RAG_PROMPT = """
-You are a SOC analyst. Given the anomaly:
+{prompt_template}:
 ---
+Given the anomaly:
 {anomaly}
 ---
-…and these historical reports:
+and the following knowledge base:
+{knowledge_base}
 ---
-{history_examples}
----
-Summarize useful patterns or lessons learned and explain their relevance to the current incident.
-"""
+Extract and report ONLY the factual information directly related to the anomaly. 
+Your output must be a JSON object with fields {required_fields} that follow these object rules but don't include objects types and meta-information:
+{response_properties}
+""" + (f"EXTREMELY IMPORTANT: Be sure to follow the notes: {notes}." if "notes" in agent_instructions else "")
 
-REFLECTION_PROMPT = """
-Your previous history/context enrichment was rejected for this reason:
+REFLECTION_PROMPT = """<GUARDRAIL>
+You are a correction agent. Your last enrichment was REJECTED for this reason:
 [ {feedback} ].
-Re-compose the historical enrichment accordingly.
-Anomaly:
----
-{anomaly}
----
-Recent incident reports:
----
-{history_examples}
----
+Re-generate the context/data, fixing the above issues.
+Original payload:
+{original_payload}
+</GUARDRAIL>
 """
 
 async def hretrieve_listener(bus: EventBus, msg: Msg):
@@ -49,7 +60,15 @@ async def hretrieve_listener(bus: EventBus, msg: Msg):
         except FileNotFoundError:
             history_rows = ["No prior incidents recorded yet."]
         context_hist = "\n".join(history_rows)
-        prompt = RAG_PROMPT.format(anomaly=anomaly, history_examples=context_hist)
+        prompt = RAG_PROMPT.format(
+            prompt_template=prompt_template,
+            anomaly=anomaly,
+            knowledge_base=context_hist,
+            required_fields=required_fields,
+            response_properties=response_properties,
+            notes=notes
+            )
+        log_gui("HRetriever", f"prompt: {prompt}")
         rag_result = llm.invoke(prompt)
         log_gui("HRetriever", f"history result: {rag_result}")
         retry_count = msg.payload.get("retry_count", 0)
@@ -62,10 +81,11 @@ async def hretrieve_listener(bus: EventBus, msg: Msg):
     elif msg.role == "HRETRIEVE_VALIDATE_REFLECT":
         # Reflection: get feedback and use new prompt
         reflection = msg.payload
-        anomaly = reflection["original_payload"]["anomaly"]
+        original_payload = reflection["original_payload"]
+        anomaly = original_payload["anomaly"]
         feedback = reflection["feedback"]
-        history_rows = reflection["original_payload"]["hist"]
-        prompt = REFLECTION_PROMPT.format(anomaly=anomaly, history_examples=history_rows, feedback=feedback)
+        history_rows = original_payload["hist"]
+        prompt = REFLECTION_PROMPT.format(original_payload=original_payload, feedback=feedback)
         rag_result = llm.invoke(prompt)
         log_gui("HRetriever", f"Reflection result: {rag_result}")
         retry_count = msg.payload.get("retry_count", 0)

@@ -56,7 +56,7 @@ async def test_pipeline():
         await asyncio.sleep(0.2)
 
     # Verifica che il file CSV sia stato scritto
-    csv_path = pathlib.Path("app/db/pool_db.csv")
+    csv_path = pathlib.Path("demo-llm-pipeline/app/db/pool_db.csv")
     assert csv_path.exists(), "Il file pool_db.csv non è stato creato!"
     # with csv_path.open() as f:
     #     content = f.read()

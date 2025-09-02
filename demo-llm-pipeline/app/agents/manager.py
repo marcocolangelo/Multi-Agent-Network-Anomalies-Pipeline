@@ -31,7 +31,7 @@ class ManagerSequencer:
         # parallel trigger
         await self.bus.publish(Msg(trace_id=tid, role="KRetriever", payload={"anomaly": anom}))
         await self.bus.publish(Msg(trace_id=tid, role="HRetriever", payload={"anomaly": anom}))
-        log_gui("Manager", f"received anomaly {anom.get('id', '')}, triggering retrievers")
+        log_gui("Manager", f"received anomaly {anom}, triggering retrievers")
 
     async def enr_ok_listener(self, msg: Msg):
         store = self.waiting[msg.trace_id]
@@ -47,6 +47,6 @@ class ManagerSequencer:
                                        payload=store))
             
     async def fatal_error(self, msg: Msg):
-        log_gui("Manager", f"fatal error occurred: too many retries in {msg.role}")
+        log_gui("Manager", f"fatal error occurred: too many retries in {msg.payload['reason']}")
         await self.bus.publish(Msg(trace_id=msg.trace_id, role="ACK_DONE", payload={}))
 

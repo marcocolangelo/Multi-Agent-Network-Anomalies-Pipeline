@@ -1,3 +1,4 @@
+import json
 from langchain_core.prompts import ChatPromptTemplate
 from app.core.bus import EventBus
 from app.core.messages import Msg
@@ -8,36 +9,45 @@ from app.utils.tracing import log_gui
 MAX_RETRIES = 2
 
 PROMPT = ChatPromptTemplate.from_messages([
-    ("system",
-     "You are a pipeline guardrail and validator for an LLM agent. "
-     "If the payload is fully correct, answer: VALID. "
-     "If NOT, answer: INVALID and then tell what MUST be fixed and "
-     "give a suggested correction as a brief, strict instruction. "
-     "Speak to the agent, not to the user."
-     "A few examples to report as INVALID: "
-     "1.You are hallucinating, "
-     "2. You are reporting details not present in the context nor in the history. "
-     "3. The context is not relevant."
-     "4. For every piece of information you provide, ensure it is backed by either the context or the history."
-     "5. If you are unsure about something, ask for clarification instead of making assumptions."
-     "6. No timeline information should be included since there is no explicit mention of time except for the raw network logs."
-     ""
-     "A few examples of what to NOT report as INVALID:"
-     "1. Too verbose but still talking about the issue."
-     "2. JSON formatting issues."
-     "3. Minor typos or grammatical errors."
-     "4. If still talking about the problem without hallucinating you should not consider it invalid just because it's not precise enough."
-     "5. It's okay if we don't have time references since time is not explicitly mentioned."
-     "6. it's okay if we don't have space references since space is not explicitly mentioned."
-
-     ),
+    (
+        "system",
+        "You are a pipeline guardrail and validator for an LLM agent. "
+        "If the payload is fully correct, answer: VALID. "
+        "If NOT, answer: INVALID and then tell what MUST be fixed and "
+        "give a suggested correction as a brief, strict instruction. "
+        "Speak to the agent, not to the user."
+        "A few examples to report as INVALID: "
+        "1. The agent is hallucinating, "
+        "2. The agent is reporting details not present in the context nor in the history. "
+        "3. The agent is providing meta-information instead of a direct answer, like info about objects types and properties."
+        "(e.g. {{ anomaly_summary: {{type: string, description: Excessive DNS NXDOMAIN responses indicating possible DGA}}, related_rules: {{type: array, items: {{type: string}}}}, related_fields: {{type: array, items: {{type: string}}}} }}) because it contains info about types and objects."
+        "4. The agent is not following the instructions coming from its personal card: {agent_card}"
+        ""
+        "A few examples of what to NOT report as INVALID:"
+        "1. Too verbose but still talking about the issue."
+        "2. Minor typos or grammatical errors."
+        "3. If still talking about the problem without hallucinating you should not consider it invalid just because it's not precise enough."
+    ),
     ("human", "{payload}")
 ])
 
 _llm = get_llm()  # Ollama or fallback
 
-def _validate(text: str):
-    resp = _llm.invoke(PROMPT.format(payload=text))
+def _validate(text: str, tag: str):
+    # According to the role of the agent, the validation criteria may vary.
+    agent_card = {}
+    if "kretriever" in tag.lower():
+        agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\kretriever.json")
+    elif "hretriever" in tag.lower():
+        # Specific validation for HRetriever
+        # agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\hretriever.json")
+        agent_card = "Follow the previous instructions"
+    elif "notify" in tag.lower() or "report" in tag.lower():
+        # Specific validation for Notifier
+        # agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\notify.json")
+        agent_card = "Follow the previous instructions"
+
+    resp = _llm.invoke(PROMPT.format(agent_card=agent_card,payload=text))
     # log(f"GuardRail ▶ RESPONSE {resp}")
     valid = str(resp).strip().upper().startswith("VALID")
     if valid:
@@ -50,7 +60,7 @@ async def guard_listener(bus: EventBus, msg: Msg):
     tag = msg.role  # e.g. INGEST_VALIDATE, ENRICH_VALIDATE, REPORT_VALIDATE
     payload = msg.payload
     retry_count = msg.payload.get("retry_count", 0)
-    ok, feedback = _validate(str(payload))
+    ok, feedback = _validate(str(payload),tag)
     log_gui("GuardRail", f"{tag} ok={ok} retry_count={retry_count} feedback={feedback}")
     if ok:
         nxt = tag.replace("VALIDATE", "OK")   # simple mapping

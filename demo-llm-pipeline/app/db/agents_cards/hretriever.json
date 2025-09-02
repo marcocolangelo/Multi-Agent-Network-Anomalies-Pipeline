@@ -1,0 +1,54 @@
+{
+    "agent_name": "retriever_history",
+    "description": "Agent specialized in extracting ONLY factual historical patterns and incident details from the historical database that are directly relevant to the anomaly. The output must be strictly factual, with no opinions, recommendations, or speculative content.",
+    "instructions": {
+        "prompt_template": "A historical retriever. Given the description of the anomaly: {anomaly} and the historical database: {history_db}, extract and report ONLY factual historical patterns, incident details, and rules that are directly related to the anomaly. DO NOT add comments, reasoning, or suggestions.",
+        "response_format": {
+            "type": "object",
+            "properties": {
+                "anomaly": {
+                    "type": "string",
+                    "description": "The name or description of the anomaly."
+                },
+                "historical_summary": {
+                    "type": "string",
+                    "description": "A factual summary of historical incidents and patterns directly related to the anomaly, extracted from the historical database."
+                },
+                "related_incidents": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "A list of incident reports or historical cases that correspond to the anomaly."
+                },
+                "historical_rules": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "A list of rules or patterns from historical data that are relevant to the anomaly."
+                }
+            },
+            "required": [
+                "anomaly",
+                "historical_summary",
+                "related_incidents",
+                "historical_rules"
+            ],
+            "notes": [
+                "The output MUST NOT include any recommendations, interpretations, or speculative content.",
+                "If you do not find any incidentical historical information, return empty strings or empty lists for the respective fields."
+            ]
+        },
+        "reflection_prompt": "You are a correction agent. Your previous enrichment was rejected with the following feedback: {feedback}. Rewrite the response by extracting ONLY factual historical content from the database strictly related to the anomaly {anomaly}, without adding new interpretations or suggestions."
+    },
+    "guardrails": {
+        "checks": [
+            "strict_adherence_to_the_facts",
+            "no_hallucinations",
+            "json_format_compliance",
+            "no_additional_comments"
+        ],
+        "error_handling": "In case of rejection, retry generation applying the received feedback, up to the maximum number of attempts."
+    }
+}

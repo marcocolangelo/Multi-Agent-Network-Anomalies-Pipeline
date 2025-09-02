@@ -57,9 +57,10 @@ async def notify_listener(bus: EventBus, msg: Msg):
         report = msg.payload["report"]
         log_gui("Notify", f"commiting validated report", "info")
         import csv, pathlib
-        p = pathlib.Path("app/db/pool_db.csv")
+        p = pathlib.Path("demo-llm-pipeline/app/db/pool_db.csv")
         p.parent.mkdir(parents=True, exist_ok=True)
         with p.open("a", newline="") as f:
             csv.writer(f).writerow("\n")
             csv.writer(f).writerow([msg.trace_id, report])
+        log_gui("Notify", f"report committed to pool_db.csv: {report}", "info")
         await bus.publish(Msg(trace_id=msg.trace_id, role="ACK_DONE", payload={}))
