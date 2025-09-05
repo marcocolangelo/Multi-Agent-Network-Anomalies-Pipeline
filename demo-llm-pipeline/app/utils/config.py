@@ -9,5 +9,6 @@ class Settings(BaseSettings):
     now: ClassVar[str] = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     AGENT_LOG_FILE: ClassVar[str] = str(AGENT_LOG_DIR) + f"/agent_log_data_{now}.txt"
     AGENT_CARDS_DIR: ClassVar[str] = "demo-llm-pipeline/app/db/agents_cards"
+    POOL_DB_PATH: ClassVar[str] = "demo-llm-pipeline/app/db/pool_db.csv"
 
 settings = Settings()

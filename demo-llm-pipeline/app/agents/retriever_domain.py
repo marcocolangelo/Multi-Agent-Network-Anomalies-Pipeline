@@ -78,6 +78,7 @@ async def kretrieve_listener(bus: EventBus, msg: Msg):
         prompt = REFLECTION_PROMPT.format(original_payload=original_payload, feedback=feedback)
         ctx_result = llm.invoke(prompt)
         log_gui("KRetriever", f"Reflection retry with feedback: {feedback}")
+        log_gui("KRetriever", f"New context result: {ctx_result}")
         retry_count = msg.payload.get("retry_count", 0)
         await bus.publish(Msg(
             trace_id=msg.trace_id,

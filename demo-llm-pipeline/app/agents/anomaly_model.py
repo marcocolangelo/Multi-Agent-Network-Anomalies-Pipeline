@@ -8,7 +8,8 @@ _DETECT = AnomalyDetectorMock()
 async def anomaly_listener(bus: EventBus, msg: Msg):
     df = msg.payload["df"]
     anomalies = _DETECT.detect(df)
-
+    embedder = msg.payload.get("model", None)
+    collection = msg.payload.get("collection", None)
     if not anomalies:
         log("AnomalyModel ▶ no anomalies found, signaling completion")
         await bus.publish(Msg(trace_id=msg.trace_id, role="ACK_DONE", payload={}))
@@ -18,4 +19,4 @@ async def anomaly_listener(bus: EventBus, msg: Msg):
         log(f"AnomalyModel ▶ detected anomaly: {anom.__dict__}")
         await bus.publish(Msg(trace_id=msg.trace_id,
                               role="MANAGER_PLAN",
-                              payload={"anomaly": anom.__dict__}))
+                              payload={"anomaly": anom.__dict__, "collection": collection, "model": embedder}))

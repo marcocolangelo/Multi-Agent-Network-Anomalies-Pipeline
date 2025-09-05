@@ -1,2 +1,5 @@
 .venv/*
 
+demo-llm-pipeline/app/db/agents_logs/*
+demo-llm-pipeline/app/db/anomaly_pool/*
+chroma_db_network/*

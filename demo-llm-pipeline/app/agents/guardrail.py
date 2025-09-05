@@ -19,14 +19,9 @@ PROMPT = ChatPromptTemplate.from_messages([
         "A few examples to report as INVALID: "
         "1. The agent is hallucinating, "
         "2. The agent is reporting details not present in the context nor in the history. "
-        "3. The agent is providing meta-information instead of a direct answer, like info about objects types and properties."
-        "(e.g. {{ anomaly_summary: {{type: string, description: Excessive DNS NXDOMAIN responses indicating possible DGA}}, related_rules: {{type: array, items: {{type: string}}}}, related_fields: {{type: array, items: {{type: string}}}} }}) because it contains info about types and objects."
-        "4. The agent is not following the instructions coming from its personal card: {agent_card}"
-        ""
-        "A few examples of what to NOT report as INVALID:"
-        "1. Too verbose but still talking about the issue."
-        "2. Minor typos or grammatical errors."
-        "3. If still talking about the problem without hallucinating you should not consider it invalid just because it's not precise enough."
+        # "3. The agent is providing meta-information instead of a direct answer, like info about objects types and properties."
+        # "(e.g. {{ anomaly_summary: {{type: string, description: Excessive DNS NXDOMAIN responses indicating possible DGA}}, related_rules: {{type: array, items: {{type: string}}}}, related_fields: {{type: array, items: {{type: string}}}} }}) because it contains info about types and objects."
+        "3. The agent is not following the instructions coming from its personal card: {agent_card}"
     ),
     ("human", "{payload}")
 ])
@@ -41,7 +36,7 @@ def _validate(text: str, tag: str):
     elif "hretriever" in tag.lower():
         # Specific validation for HRetriever
         # agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\hretriever.json")
-        agent_card = "Follow the previous instructions"
+        agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\hretriever.json")
     elif "notify" in tag.lower() or "report" in tag.lower():
         # Specific validation for Notifier
         # agent_card = json.load("demo-llm-pipeline\\app\\db\\agents_cards\\notify.json")

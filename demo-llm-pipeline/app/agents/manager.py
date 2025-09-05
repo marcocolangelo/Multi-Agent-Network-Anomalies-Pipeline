@@ -27,10 +27,13 @@ class ManagerSequencer:
         anom = msg.payload["anomaly"]
         tid = msg.trace_id
         self.waiting[tid] = {"anomaly": anom, "ctx": None, "hist": None}
+        pool_collection = msg.payload.get("collection", None)
+        pool_model = msg.payload.get("model", None)
+        log_gui("Manager", f"passing collection: {pool_collection}, model: {pool_model}")
 
         # parallel trigger
-        await self.bus.publish(Msg(trace_id=tid, role="KRetriever", payload={"anomaly": anom}))
-        await self.bus.publish(Msg(trace_id=tid, role="HRetriever", payload={"anomaly": anom}))
+        await self.bus.publish(Msg(trace_id=tid, role="KRetriever", payload={"anomaly": anom, "collection": pool_collection, "model": pool_model}))
+        await self.bus.publish(Msg(trace_id=tid, role="HRetriever", payload={"anomaly": anom, "collection": pool_collection, "model": pool_model}))
         log_gui("Manager", f"received anomaly {anom}, triggering retrievers")
 
     async def enr_ok_listener(self, msg: Msg):

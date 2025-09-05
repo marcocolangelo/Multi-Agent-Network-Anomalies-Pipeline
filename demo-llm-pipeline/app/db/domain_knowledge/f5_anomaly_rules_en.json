@@ -1,0 +1,144 @@
+{
+    "rules": [
+        {
+            "rule": "SQL Injection (SQLi)",
+            "explanation": "An attack that exploits injection of malicious SQL commands to bypass authentication and manipulate databases.",
+            "examples": [
+                {
+                    "description": "Multiple suspicious query attempts with special characters in SQL query fields.",
+                    "fields": "query, source_ip, timestamp"
+                },
+                {
+                    "description": "Unauthorized access to protected tables via crafted URL payloads.",
+                    "fields": "url, http_method, source_ip"
+                },
+                {
+                    "description": "Input fields in POST body containing typical SQLi payload patterns.",
+                    "fields": "http_body, client_ip"
+                }
+            ]
+        },
+        {
+            "rule": "Cross-Site Scripting (XSS) - Stored",
+            "explanation": "An attack where malicious scripts are injected into web content viewed by other users.",
+            "examples": [
+                {
+                    "description": "HTTP requests containing <script> tags in the request body.",
+                    "fields": "http_body, user_agent, referrer"
+                },
+                {
+                    "description": "Malicious scripts stored in user-generated comments and served to visitors.",
+                    "fields": "url, http_post_params"
+                }
+            ]
+        },
+        {
+            "rule": "Brute Force Login Attempts",
+            "explanation": "Repeated attempts to guess valid credentials by systematically trying many combinations.",
+            "examples": [
+                {
+                    "description": "Single IP address generates hundreds of failed login attempts in a short timeframe.",
+                    "fields": "source_ip, destination_port, http_status_code, timestamp"
+                },
+                {
+                    "description": "Multiple distributed IPs trying a list of common passwords against many usernames.",
+                    "fields": "username_field, source_ip_list, failed_login_count, time_window"
+                }
+            ]
+        },
+        {
+            "rule": "Directory Traversal",
+            "explanation": "An attack to access files and directories outside the webroot using path traversal sequences.",
+            "examples": [
+                {
+                    "description": "Requests containing sequences like '../' to access sensitive filesystem paths.",
+                    "fields": "url_path, url_parameters, source_ip, http_status_code"
+                }
+            ]
+        },
+        {
+            "rule": "SYN Flood",
+            "explanation": "A Denial-of-Service attack sending many SYN packets to exhaust server resources.",
+            "examples": [
+                {
+                    "description": "High volume of TCP SYN packets from a set of IP addresses.",
+                    "fields": "source_ip, destination_ip, tcp_flags"
+                },
+                {
+                    "description": "Incomplete TCP handshakes from suspicious IPs over a short period.",
+                    "fields": "source_ip, connection_state, timestamp"
+                }
+            ]
+        },
+        {
+            "rule": "Bot Detection - Web Scraping",
+            "explanation": "Unauthorized automated access to web content for data extraction.",
+            "examples": [
+                {
+                    "description": "High request rate from one source IP accessing the same pages repeatedly.",
+                    "fields": "source_ip, request_uri, user_agent, timestamp"
+                },
+                {
+                    "description": "Requests with missing or unusual user agent headers typical of bots.",
+                    "fields": "user_agent, source_ip, headers"
+                }
+            ]
+        },
+        {
+            "rule": "Cross-Site Request Forgery (CSRF)",
+            "explanation": "An attack that tricks a user's browser into executing unwanted actions on a web application.",
+            "examples": [
+                {
+                    "description": "HTTP requests with suspicious Origin or Referer headers for sensitive actions.",
+                    "fields": "origin_header, referer_header, user_id"
+                },
+                {
+                    "description": "Unexpected state changes with missing CSRF tokens in form submissions.",
+                    "fields": "form_parameters, session_id, csrf_token_presence"
+                }
+            ]
+        },
+        {
+            "rule": "Authentication Bypass Due to Weak Passwords",
+            "explanation": "User accounts compromised due to use of weak or default passwords.",
+            "examples": [
+                {
+                    "description": "Repeated successful logins from various IPs using default or common passwords.",
+                    "fields": "user_id, source_ip, login_success"
+                },
+                {
+                    "description": "Password change requests failing to reject weak password entries.",
+                    "fields": "request_parameters, user_agent, response_code"
+                }
+            ]
+        },
+        {
+            "rule": "Command Injection",
+            "explanation": "An attack executing arbitrary commands on the host operating system via vulnerable inputs.",
+            "examples": [
+                {
+                    "description": "HTTP requests containing shell metacharacters in file upload names or parameters.",
+                    "fields": "http_body, file_name, source_ip"
+                },
+                {
+                    "description": "Execution traces showing unexpected shell commands invoked from input parameters.",
+                    "fields": "server_logs, command_arguments"
+                }
+            ]
+        },
+        {
+            "rule": "Slowloris HTTP Attack",
+            "explanation": "A type of DoS attack that holds HTTP connections open by sending partial requests slowly.",
+            "examples": [
+                {
+                    "description": "Many connections with incomplete HTTP request headers over extended durations.",
+                    "fields": "connection_states, source_ip, timestamp"
+                },
+                {
+                    "description": "Unusually long keep-alive sessions clogging server resources.",
+                    "fields": "session_durations, http_headers"
+                }
+            ]
+        }
+    ]
+}

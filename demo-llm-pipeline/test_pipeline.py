@@ -3,9 +3,14 @@ from app.core.bus import EventBus
 from app.utils.tracing import init_logger
 from app.agents import proc, guardrail, anomaly_model, retriever_domain, retriever_history, notify, manager
 from app.GUI import PipelineGUI
-
+import chromadb
+from sentence_transformers import SentenceTransformer
+import csv
+from app.utils.config import settings
 
 RAW_LOGS_PATH = pathlib.Path("demo-llm-pipeline/raw_logs_demo.txt")
+POOLDB_PATH = settings.POOL_DB_PATH
+
 with RAW_LOGS_PATH.open() as f:
     RAW_LOGS = f.read()
 
@@ -62,6 +67,24 @@ async def test_pipeline():
     #     content = f.read()
     #     print("Contenuto pool_db.csv:\n", content)
     print("Test completato: la pipeline e il bus funzionano correttamente.")
+
+def setup_vector_db():
+    db = chromadb.Client()
+    collection = db.create_collection("incident_reports")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    # Indicizza i report storici
+    with open(POOLDB_PATH, "r") as f:
+        reader = csv.reader(f)
+        for i, row in enumerate(reader):
+            if row:
+                text = row[-1]
+                embedding = model.encode(text).tolist()
+                collection.add(
+                    documents=[text],
+                    embeddings=[embedding],
+                    ids=[str(i)]
+                )
+    return collection, model
 
 if __name__ == "__main__":
     init_logger()
